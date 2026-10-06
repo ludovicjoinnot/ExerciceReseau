@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SYS_EVAL_RESEAU_AVANCE</title>
+    <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+    <style>
+        :root { --cyan: #00f3ff; --magenta: #ff00ea; --bg-dark: #0a0a12; --panel-bg: #111122; --text-main: #e0e0ff; }
+        body { background-color: var(--bg-dark); color: var(--text-main); font-family: 'Share Tech Mono', monospace; margin: 0; padding: 20px; background-image: linear-gradient(rgba(0, 243, 255, 0.05) 1px, transparent 1px), linear-gradient(90deg, rgba(0, 243, 255, 0.05) 1px, transparent 1px); background-size: 20px 20px; }
+        h1, h2, h3 { font-family: 'Rajdhani', sans-serif; text-transform: uppercase; letter-spacing: 2px; }
+        .hud-container { max-width: 900px; margin: 0 auto; }
+        .header { border-bottom: 2px solid var(--magenta); padding-bottom: 10px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: flex-end; }
+        .title-box h1 { margin: 0; color: var(--magenta); text-shadow: 0 0 10px rgba(255, 0, 234, 0.5); }
+        .progress-box { color: var(--cyan); font-weight: bold; }
+        .panel { background-color: var(--panel-bg); border: 1px solid #334; padding: 20px; margin-bottom: 20px; position: relative; clip-path: polygon(20px 0, 100% 0, 100% calc(100% - 20px), calc(100% - 20px) 100%, 0 100%, 0 20px); }
+        .panel::before { content: ''; position: absolute; top: 0; left: 0; border-top: 3px solid var(--cyan); border-left: 3px solid var(--cyan); width: 40px; height: 40px; }
+        .module-title { color: var(--cyan); margin-top: 0; border-bottom: 1px solid #334; padding-bottom: 10px; }
+        button { background-color: transparent; color: var(--cyan); border: 1px solid var(--cyan); padding: 10px 20px; font-family: 'Rajdhani', sans-serif; font-size: 1.2rem; cursor: pointer; text-transform: uppercase; transition: all 0.2s; clip-path: polygon(10px 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%, 0 10px); margin-top: 15px; }
+        button:hover { background-color: var(--cyan); color: var(--bg-dark); box-shadow: 0 0 15px rgba(0, 243, 255, 0.5); }
+        .btn-submit { color: var(--magenta); border-color: var(--magenta); width: 100%; font-size: 1.5rem; }
+        .btn-submit:hover { background-color: var(--magenta); box-shadow: 0 0 15px rgba(255, 0, 234, 0.5); }
+        input[type="text"], select { background: rgba(0,0,0,0.5); border: 1px solid var(--cyan); color: var(--cyan); padding: 10px; font-family: 'Share Tech Mono', monospace; font-size: 1.1rem; margin-bottom: 10px; }
+        .page { display: none; }
+        .page.active { display: block; }
+        .question-block { margin-bottom: 15px; border-left: 2px solid #334; padding-left: 10px; }
+        .warning-text { color: #ffae00; font-style: italic; font-size: 0.9rem; margin-bottom: 15px; }
+        
+        /* M1 OSI Drag & Drop */
+        .osi-container { display: flex; gap: 20px; margin-top: 15px; }
+        .osi-stack, .osi-bank { flex: 1; display: flex; flex-direction: column; gap: 10px; }
+        .drop-zone { height: 40px; border: 1px dashed #556; display: flex; align-items: center; padding-left: 10px; position: relative; background-color: rgba(255, 255, 255, 0.02); }
+        .zone-label { position: absolute; left: -90px; color: #889; width: 80px; text-align: right; }
+        .draggable-item { background-color: rgba(0, 243, 255, 0.1); border: 1px solid var(--cyan); padding: 8px; cursor: grab; text-align: center; color: #fff; z-index: 10; }
+        .trap-item { background-color: rgba(255, 0, 0, 0.1); border-color: #f55; } /* Subtile hint */
+
+        /* M2 TCP */
+        .tcp-packet-btn { margin: 5px; font-size: 1rem; }
+        .tcp-sequence-box { display: flex; gap: 10px; min-height: 50px; border: 1px solid #334; padding: 10px; margin-top: 10px; background: rgba(0,0,0,0.3); align-items: center; flex-wrap: wrap; }
+        .seq-item { background: var(--cyan); color: #000; padding: 5px 10px; cursor: pointer; font-weight: bold; }
+        .seq-item:hover::after { content: ' (X)'; color: red; }
+    </style>
+</head>
+<body>
+
+<div class="hud-container">
+    <div class="header">
+        <div class="title-box">
+            <h1>SYS_EVAL_RESEAU</h1>
+            <div>Option Informatique • Exercice Formatif Avancé (40 PTS)</div>
+        </div>
+        <div class="progress-box" id="progress-indicator">CONNEXION</div>
+    </div>
+
+    <iframe name="hidden_iframe" id="hidden_iframe" style="display:none;" onload="if(submitted){document.getElementById('submission-status').innerText = 'Transmission confirmée. Le serveur a bien enregistré les données.';}"></iframe>
+    
+    <form action="https://script.google.com/macros/s/AKfycbwVDSjkCF91islBAoEWhKadAjgGl2JGIBpt28BGMxQ5GRlB_1xjMftjZtycKMqYr8I1/exec" method="POST" target="hidden_iframe" id="google-form" style="display:none;">
+        <input type="hidden" name="eleve" id="form-eleve">
+        <input type="hidden" name="score" id="form-score">
+        <input type="hidden" name="module" value="Exercice Avancé /40">
+    </form>
+
+    <!-- PAGE 0 : LOGIN -->
+    <div class="page active" id="page-0">
+        <div class="panel">
+            <h2 class="module-title">IDENTIFICATION REQUISE</h2>
+            <p>Veuillez entrer vos identifiants pour démarrer la séquence d'exercice.</p>
+            <input type="text" id="student-name" placeholder="NOM Prénom">
+            <br>
+            <button onclick="nextPage()">Initier la session</button>
+            <p id="login-error" style="color:#f00; display:none;">Erreur : Identifiant manquant.</p>
+        </div>
+    </div>
+
+    <!-- PAGE 1 : OSI -->
+    <div class="page" id="page-1">
+        <div class="panel">
+            <h2 class="module-title">MODULE 1 // CALIBRAGE OSI (5 PTS)</h2>
+            <p>Glissez les couches dans les blocs correspondants à leur numéro officiel.</p>
+            <p class="warning-text">/!\ ALERTE : Des couches parasites (pièges) ont infecté la banque de données. Ne les utilisez pas.</p>
+            <div class="osi-container">
+                <div class="osi-stack" id="osi-target"></div>
+                <div class="osi-bank" id="osi-bank"></div>
+            </div>
+            <button onclick="nextPage()">Suivant</button>
+        </div>
+    </div>
+
+    <!-- PAGE 2 : TCP SÉQUENCE -->
+    <div class="page" id="page-2">
+        <div class="panel">
+            <h2 class="module-title">MODULE 2 // SÉQUENCES TCP (5 PTS)</h2>
+            <p class="warning-text">/!\ Des flags invalides sont disponibles. Sélectionnez uniquement ceux nécessaires.</p>
+            
+            <div>
+                <button class="tcp-packet-btn" onclick="addPacket(1, 'SYN')">SYN</button>
+                <button class="tcp-packet-btn" onclick="addPacket(1, 'ACK')">ACK</button>
+                <button class="tcp-packet-btn" onclick="addPacket(1, 'SYN-ACK')">SYN-ACK</button>
+                <button class="tcp-packet-btn" onclick="addPacket(1, 'FIN')">FIN</button>
+                <button class="tcp-packet-btn" onclick="addPacket(1, 'RST')">RST</button>
+                <button class="tcp-packet-btn" onclick="addPacket(1, 'RST-ACK')">RST-ACK</button>
+                <button class="tcp-packet-btn" onclick="addPacket(1, 'PSH')">PSH</button>
+                <button class="tcp-packet-btn" onclick="addPacket(1, 'URG')">URG</button>
+            </div>
+
+            <p style="margin-top:20px;"><strong>MISSION A (2 pts) :</strong> Ouvrir une session TCP (Client initie).</p>
+            <div id="tcp-sequence-1" class="tcp-sequence-box" onclick="activeSeq=1" style="border-color:var(--cyan);">Cliquez sur un bouton au-dessus pour ajouter ici...</div>
+
+            <p style="margin-top:20px;"><strong>MISSION B (2 pts) :</strong> Fermer proprement la session TCP (Client initie).</p>
+            <div id="tcp-sequence-2" class="tcp-sequence-box" onclick="activeSeq=2">Cliquez ici puis ajoutez des paquets...</div>
+
+            <p style="margin-top:20px;"><strong>MISSION C (1 pt) :</strong> Le serveur refuse catégoriquement l'ouverture demandée par le client.</p>
+            <div id="tcp-sequence-3" class="tcp-sequence-box" onclick="activeSeq=3">Cliquez ici puis ajoutez des paquets...</div>
+
+            <button onclick="nextPage()">Suivant</button>
+        </div>
+    </div>
+
+    <!-- PAGE 3 : ÉTATS DES PORTS -->
+    <div class="page" id="page-3">
+        <div class="panel">
+            <h2 class="module-title">MODULE 3 // ÉTATS DES PORTS (5 PTS)</h2>
+            <p class="warning-text">/!\ Certains états dans la liste n'existent pas ou sont mal orthographiés.</p>
+            <div id="m3-container"></div>
+            <button onclick="nextPage()">Suivant</button>
+        </div>
+    </div>
+
+    <!-- PAGE 4 : DIAGNOSTIC OSI -->
+    <div class="page" id="page-4">
+        <div class="panel">
+            <h2 class="module-title">MODULE 4 // TERMINAL DIAGNOSTIC (5 PTS)</h2>
+            <p>Identifiez la couche OSI (1 à 7) principalement responsable pour chaque panne.</p>
+            <div id="m4-container"></div>
+            <button onclick="nextPage()">Suivant</button>
+        </div>
+    </div>
+
+    <!-- PAGE 5 : PROTOCOLES -->
+    <div class="page" id="page-5">
+        <div class="panel">
+            <h2 class="module-title">MODULE 5 // CLASSIFICATEUR DE PROTOCOLES (5 PTS)</h2>
+            <div id="m5-container"></div>
+            <button onclick="nextPage()">Suivant</button>
+        </div>
+    </div>
+
+    <!-- PAGE 6 : MATRICE OSI vs TCP/IP -->
+    <div class="page" id="page-6">
+        <div class="panel">
+            <h2 class="module-title">MODULE 6 // MATRICE OSI <> TCP/IP (5 PTS)</h2>
+            <p>Associez chaque couche du modèle OSI à son équivalent exact dans le modèle TCP/IP.</p>
+            <p class="warning-text">/!\ Le modèle TCP/IP original ne comporte que 4 couches. Méfiez-vous des intrus.</p>
+            <div id="m6-container"></div>
+            <button onclick="nextPage()">Suivant</button>
+        </div>
+    </div>
+
+    <!-- PAGE 7 : TCP vs UDP -->
+    <div class="page" id="page-7">
+        <div class="panel">
+            <h2 class="module-title">MODULE 7 // SÉLECTEUR DE TRANSPORT (5 PTS)</h2>
+            <p>Quel protocole utiliser pour ces flux de données ?</p>
+            <div id="m7-container"></div>
+            <button onclick="nextPage()">Suivant</button>
+        </div>
+    </div>
+
+    <!-- PAGE 8 : TRAME ARP -->
+    <div class="page" id="page-8">
+        <div class="panel">
+            <h2 class="module-title">MODULE 8 // ANALYSEUR ARP (5 PTS)</h2>
+            <p>PC-A (192.168.1.10) veut parler à PC-B (192.168.1.20) mais ignore son adresse MAC.</p>
+            <div class="question-block">
+                <p>1. Type de diffusion pour la <strong>REQUÊTE</strong> ARP :</p>
+                <select id="m8-q1"><option value="">--</option><option value="Unicast">Unicast</option><option value="Broadcast">Broadcast</option><option value="Multicast">Multicast</option></select>
+            </div>
+            <div class="question-block">
+                <p>2. Adresse MAC Cible inscrite dans la <strong>REQUÊTE</strong> ARP :</p>
+                <select id="m8-q2"><option value="">--</option><option value="MAC de PC-B">MAC de PC-B</option><option value="FF:FF:FF:FF:FF:FF">FF:FF:FF:FF:FF:FF</option><option value="00:00:00:00:00:00">00:00:00:00:00:00</option></select>
+            </div>
+            <div class="question-block">
+                <p>3. Type de diffusion pour la <strong>RÉPONSE</strong> ARP (de PC-B vers PC-A) :</p>
+                <select id="m8-q3"><option value="">--</option><option value="Unicast">Unicast</option><option value="Broadcast">Broadcast</option><option value="Multicast">Multicast</option></select>
+            </div>
+            <button onclick="nextPage()" class="btn-submit">CLÔTURER L'EXERCICE</button>
+        </div>
+    </div>
+
+    <!-- PAGE 9 : RESULTATS -->
+    <div class="page" id="page-9">
+        <div class="panel">
+            <h2 class="module-title">RAPPORT DE MISSION</h2>
+            <h1 style="color:var(--cyan); text-align:center; font-size:3rem;" id="final-score-display">0 / 40</h1>
+            <p id="submission-status" style="text-align: center; color: var(--magenta); font-weight: bold;">Envoi des données en cours...</p>
+        </div>
+    </div>
+</div>
+
+<script>
+    let currentPage = 0;
+    const totalPages = 9;
+    let studentName = "";
+    let submitted = false;
+    let scores = [0,0,0,0,0,0,0,0];
+
+    // --- DATA ---
+    const osiBankItems = [
+        {id:"7", n:"Application"}, {id:"6", n:"Présentation"}, {id:"5", n:"Session"}, 
+        {id:"4", n:"Transport"}, {id:"3", n:"Réseau"}, {id:"2", n:"Liaison de données"}, {id:"1", n:"Physique"},
+        {id:"trap1", n:"Internet"}, {id:"trap2", n:"Accès Réseau"} // Traps
+    ];
+    
+    let activeSeq = 1;
+    let tcpSeq = { 1: [], 2: [], 3: [] };
+    
+    const m3Data = [
+        {q:"Serveur en attente de connexion entrante.", a:"LISTEN"}, 
+        {q:"Le client vient d'envoyer SYN et attend la réponse.", a:"SYN_SENT"}, 
+        {q:"Le serveur a reçu SYN et a répondu SYN-ACK.", a:"SYN_RCVD"},
+        {q:"Données en cours de transfert (session active).", a:"ESTABLISHED"}, 
+        {q:"Le client a envoyé FIN pour fermer et attend un ACK.", a:"FIN_WAIT_1"},
+        {q:"Demande de fermeture reçue par le serveur (avertit l'application).", a:"CLOSE_WAIT"},
+        {q:"Attente finale (2 MSL) avant libération totale du port.", a:"TIME_WAIT"}
+    ];
+    const m3Options = ["LISTEN","LISTENING","SYN_SENT","SYN_RCVD","ESTABLISHED","FIN_WAIT_1","CLOSE_WAIT","CLOSED_WAIT","TIME_WAIT","CLOSED","OPEN"];
+    
+    const m4Data = [
+        {q:"> Câble RJ45 débranché ou carte réseau désactivée.", a:"1"},
+        {q:"> Ping vers 8.8.8.8 en échec (Délai d'attente dépassé) / Erreur IP.", a:"3"},
+        {q:"> Résolution DNS impossible pour www.site.com.", a:"7"}
+    ];
+    const m4Options = ["1 (Physique)", "2 (Liaison)", "3 (Réseau)", "4 (Transport)", "5 (Session)", "6 (Présentation)", "7 (Application)"];
+    
+    const m5Data = [
+        {q:"Protocole fiable, orienté connexion (ex: HTTP).", a:"TCP"}, 
+        {q:"Protocole rapide, aucune garantie de livraison (ex: Streaming).", a:"UDP"}, 
+        {q:"Opère au niveau 3 : gère l'adressage logique et le routage.", a:"IP"}, 
+        {q:"Résout l'adresse physique (MAC) à partir d'une adresse IP.", a:"ARP"}, 
+        {q:"Envoie des messages de diagnostic et d'erreur (ex: Ping).", a:"ICMP"}
+    ];
+    const m5Options = ["TCP","UDP","IP","ARP","ICMP","HTTP"];
+    
+    const m6Data = [
+        {q:"Application", a:"Application"}, {q:"Présentation", a:"Application"}, {q:"Session", a:"Application"}, 
+        {q:"Transport", a:"Transport"}, {q:"Réseau", a:"Internet"}, 
+        {q:"Liaison de données", a:"Accès Réseau"}, {q:"Physique", a:"Accès Réseau"}
+    ];
+    const m6Options = ["Application","Transport","Internet","Accès Réseau","Réseau","Session"];
+    
+    const m7Data = [
+        {q:"Transfert d'un fichier confidentiel lourd (FTP)", a:"TCP"}, 
+        {q:"Requête de résolution de nom (DNS)", a:"UDP"}, 
+        {q:"Chargement d'une page Web sécurisée (HTTPS)", a:"TCP"}, 
+        {q:"Test de connectivité avec la commande 'ping'", a:"ICMP"},
+        {q:"Appel vocal en temps réel (VoIP)", a:"UDP"}
+    ];
+    const m7Options = ["TCP","UDP","ICMP"];
+
+    function initForms() {
+        // M1
+        let tgt = document.getElementById('osi-target');
+        let bnk = document.getElementById('osi-bank');
+        [1,2,3,4,5,6,7].sort(()=>Math.random()-0.5).forEach(num => {
+            tgt.innerHTML += `<div class="drop-zone" data-layer="${num}"><div class="zone-label">Couche ${num}</div></div>`;
+        });
+        [...osiBankItems].sort(()=>Math.random()-0.5).forEach(l => {
+            bnk.innerHTML += `<div class="draggable-item" draggable="true" id="drag-${l.id}" data-id="${l.id}" ondragstart="event.dataTransfer.setData('text', event.target.id)">${l.n}</div>`;
+        });
+
+        document.querySelectorAll('.drop-zone, .osi-bank').forEach(z => {
+            z.addEventListener('dragover', e => e.preventDefault());
+            z.addEventListener('drop', e => { 
+                e.preventDefault(); 
+                const id = e.dataTransfer.getData('text');
+                if (!id) return;
+                const el = document.getElementById(id); 
+                let dropTarget = e.target.closest('.drop-zone') || e.target.closest('.osi-bank');
+                if (dropTarget && dropTarget.classList.contains('drop-zone')) {
+                    if (dropTarget.querySelectorAll('.draggable-item').length === 0) dropTarget.appendChild(el); 
+                } else if (dropTarget && dropTarget.id === 'osi-bank') {
+                    dropTarget.appendChild(el); 
+                } 
+            });
+        });
+
+        // M2 Selection Box Highlighter
+        document.querySelectorAll('.tcp-sequence-box').forEach(box => {
+            box.addEventListener('click', function() {
+                document.querySelectorAll('.tcp-sequence-box').forEach(b => b.style.borderColor = '#334');
+                this.style.borderColor = 'var(--cyan)';
+                if(this.id === 'tcp-sequence-1') activeSeq = 1;
+                if(this.id === 'tcp-sequence-2') activeSeq = 2;
+                if(this.id === 'tcp-sequence-3') activeSeq = 3;
+            });
+        });
+
+        // QCMs
+        const genSelect = (data, containerId, prefix, options) => {
+            let html = '';
+            data.sort(()=>Math.random()-0.5).forEach((item, i) => {
+                html += `<div class="question-block"><p>${item.q}</p><select id="${prefix}-${i}" data-ans="${item.a}">
+                <option value="">--</option>`;
+                options.forEach(opt => html += `<option value="${opt.split(' ')[0]}">${opt}</option>`);
+                html += `</select></div>`;
+            });
+            document.getElementById(containerId).innerHTML = html;
+        };
+
+        genSelect(m3Data, 'm3-container', 'm3', m3Options);
+        genSelect(m4Data, 'm4-container', 'm4', m4Options);
+        genSelect(m5Data, 'm5-container', 'm5', m5Options);
+        genSelect(m6Data, 'm6-container', 'm6', m6Options);
+        genSelect(m7Data, 'm7-container', 'm7', m7Options);
+    }
+
+    function addPacket(ignore, p) { 
+        tcpSeq[activeSeq].push(p); 
+        renderTCP(activeSeq); 
+    }
+    
+    function renderTCP(seqId) { 
+        let box = document.getElementById('tcp-sequence-' + seqId);
+        if(tcpSeq[seqId].length === 0) {
+            box.innerHTML = "Cliquez ici puis ajoutez des paquets...";
+        } else {
+            box.innerHTML = tcpSeq[seqId].map((p,i) => `<div class="seq-item" onclick="removePacket(${seqId}, ${i}); event.stopPropagation();">${p}</div>`).join(''); 
+        }
+    }
+    
+    function removePacket(seqId, index) {
+        tcpSeq[seqId].splice(index, 1);
+        renderTCP(seqId);
+    }
+
+    function nextPage() {
+        if(currentPage === 0) {
+            studentName = document.getElementById('student-name').value.trim();
+            if(!studentName) { document.getElementById('login-error').style.display = 'block'; return; }
+        }
+        document.getElementById(`page-${currentPage}`).classList.remove('active');
+        currentPage++;
+        if(currentPage < totalPages) {
+            document.getElementById(`page-${currentPage}`).classList.add('active');
+            document.getElementById('progress-indicator').innerText = `MODULE ${currentPage} / 8`;
+        }
+        if(currentPage === 8) {
+            calculateScores();
+            sendData();
+            document.getElementById('page-9').classList.add('active');
+            document.getElementById('progress-indicator').innerText = `RÉCUPÉRATION DES DONNÉES`;
+        }
+    }
+
+    function calculateScores() {
+        // M1
+        let m1C = 0;
+        document.querySelectorAll('.drop-zone').forEach(z => { 
+            let item = z.querySelector('.draggable-item');
+            if(item && item.dataset.id === z.dataset.layer) m1C++; 
+        });
+        scores[0] = (m1C / 7) * 5;
+
+        // M2
+        let m2C = 0;
+        if (JSON.stringify(tcpSeq[1]) === JSON.stringify(['SYN','SYN-ACK','ACK'])) m2C += 2;
+        if (JSON.stringify(tcpSeq[2]) === JSON.stringify(['FIN','ACK','FIN','ACK'])) m2C += 2;
+        if (JSON.stringify(tcpSeq[3]) === JSON.stringify(['SYN','RST-ACK']) || JSON.stringify(tcpSeq[3]) === JSON.stringify(['SYN','RST'])) m2C += 1;
+        scores[1] = m2C;
+
+        // M3, M4, M5, M6, M7
+        const calcQCM = (prefix, dataLength) => {
+            let c = 0;
+            document.querySelectorAll(`#${prefix}-container select`).forEach(s => { if(s.value === s.dataset.ans) c++; });
+            return (c / dataLength) * 5;
+        };
+        scores[2] = calcQCM('m3', m3Data.length);
+        scores[3] = calcQCM('m4', m4Data.length);
+        scores[4] = calcQCM('m5', m5Data.length);
+        scores[5] = calcQCM('m6', m6Data.length);
+        scores[6] = calcQCM('m7', m7Data.length);
+
+        // M8
+        let m8C = 0;
+        if(document.getElementById('m8-q1').value === "Broadcast") m8C += 1.66;
+        if(document.getElementById('m8-q2').value === "FF:FF:FF:FF:FF:FF") m8C += 1.66;
+        if(document.getElementById('m8-q3').value === "Unicast") m8C += 1.68; // Make it exactly 5
+        scores[7] = m8C;
+
+        let total = scores.reduce((a,b) => a+b, 0);
+        document.getElementById('final-score-display').innerText = `${total.toFixed(1)} / 40`;
+        document.getElementById('form-score').value = total.toFixed(1);
+    }
+
+    function sendData() {
+        submitted = true;
+        document.getElementById('form-eleve').value = studentName;
+        document.getElementById('google-form').submit();
+    }
+
+    window.onload = initForms;
+</script>
+</body>
+</html>
