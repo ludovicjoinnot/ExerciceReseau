@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SYS_ExFormatif_RESEAU</title>
+    <title>SYS_EVAL_RESEAU_SECURE</title>
     <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
     <style>
         :root { --cyan: #00f3ff; --magenta: #ff00ea; --bg-dark: #0a0a12; --panel-bg: #111122; --text-main: #e0e0ff; }
@@ -32,7 +32,6 @@
         .drop-zone { height: 40px; border: 1px dashed #556; display: flex; align-items: center; padding-left: 10px; position: relative; background-color: rgba(255, 255, 255, 0.02); }
         .zone-label { position: absolute; left: -90px; color: #889; width: 80px; text-align: right; }
         .draggable-item { background-color: rgba(0, 243, 255, 0.1); border: 1px solid var(--cyan); padding: 8px; cursor: grab; text-align: center; color: #fff; z-index: 10; }
-        .trap-item { background-color: rgba(255, 0, 0, 0.1); border-color: #f55; } /* Subtile hint */
 
         /* M2 TCP */
         .tcp-packet-btn { margin: 5px; font-size: 1rem; }
@@ -47,7 +46,7 @@
     <div class="header">
         <div class="title-box">
             <h1>SYS_EVAL_RESEAU</h1>
-            <div>Option Informatique • Exercice Formatif Avancé (40 PTS)</div>
+            <div>Option Informatique • Exercice Formatif Sécurisé (40 PTS)</div>
         </div>
         <div class="progress-box" id="progress-indicator">CONNEXION</div>
     </div>
@@ -57,7 +56,7 @@
     <form action="https://script.google.com/macros/s/AKfycbwVDSjkCF91islBAoEWhKadAjgGl2JGIBpt28BGMxQ5GRlB_1xjMftjZtycKMqYr8I1/exec" method="POST" target="hidden_iframe" id="google-form" style="display:none;">
         <input type="hidden" name="eleve" id="form-eleve">
         <input type="hidden" name="score" id="form-score">
-        <input type="hidden" name="module" value="Exercice Avancé /40">
+        <input type="hidden" name="module" value="Exercice Sécurisé /40">
     </form>
 
     <!-- PAGE 0 : LOGIN -->
@@ -77,7 +76,7 @@
         <div class="panel">
             <h2 class="module-title">MODULE 1 // CALIBRAGE OSI (5 PTS)</h2>
             <p>Glissez les couches dans les blocs correspondants à leur numéro officiel.</p>
-            <p class="warning-text">/!\ ALERTE : Des couches parasites (pièges) ont infecté la banque de données. Ne les utilisez pas.</p>
+            <p class="warning-text">/!\ ALERTE : Des couches parasites (pièges) ont infecté la banque de données.</p>
             <div class="osi-container">
                 <div class="osi-stack" id="osi-target"></div>
                 <div class="osi-bank" id="osi-bank"></div>
@@ -104,7 +103,7 @@
             </div>
 
             <p style="margin-top:20px;"><strong>MISSION A (2 pts) :</strong> Ouvrir une session TCP (Client initie).</p>
-            <div id="tcp-sequence-1" class="tcp-sequence-box" onclick="activeSeq=1" style="border-color:var(--cyan);">Cliquez sur un bouton au-dessus pour ajouter ici...</div>
+            <div id="tcp-sequence-1" class="tcp-sequence-box" onclick="activeSeq=1" style="border-color:var(--cyan);">Cliquez sur un bouton au-dessus...</div>
 
             <p style="margin-top:20px;"><strong>MISSION B (2 pts) :</strong> Fermer proprement la session TCP (Client initie).</p>
             <div id="tcp-sequence-2" class="tcp-sequence-box" onclick="activeSeq=2">Cliquez ici puis ajoutez des paquets...</div>
@@ -120,7 +119,6 @@
     <div class="page" id="page-3">
         <div class="panel">
             <h2 class="module-title">MODULE 3 // ÉTATS DES PORTS (5 PTS)</h2>
-            <p class="warning-text">/!\ Certains états dans la liste n'existent pas ou sont mal orthographiés.</p>
             <div id="m3-container"></div>
             <button onclick="nextPage()">Suivant</button>
         </div>
@@ -150,7 +148,6 @@
         <div class="panel">
             <h2 class="module-title">MODULE 6 // MATRICE OSI <> TCP/IP (5 PTS)</h2>
             <p>Associez chaque couche du modèle OSI à son équivalent exact dans le modèle TCP/IP.</p>
-            <p class="warning-text">/!\ Le modèle TCP/IP original ne comporte que 4 couches. Méfiez-vous des intrus.</p>
             <div id="m6-container"></div>
             <button onclick="nextPage()">Suivant</button>
         </div>
@@ -198,67 +195,73 @@
 </div>
 
 <script>
+    // --- Fonction de chiffrement dynamique ---
+    function enc(str) {
+        if (!str) return "";
+        return Array.from(str).map(c => String.fromCharCode(c.charCodeAt(0) + 1)).join('');
+    }
+
     let currentPage = 0;
-    const totalPages = 9;
+    const totalPages = 10; 
     let studentName = "";
     let submitted = false;
     let scores = [0,0,0,0,0,0,0,0];
 
-    // --- DATA ---
+    // --- DATA CHIFFRÉES (Impossible à lire en clair) ---
+    // Les data-id ont été altérés pour éviter la correspondance facile avec le numéro de couche
     const osiBankItems = [
-        {id:"7", n:"Application"}, {id:"6", n:"Présentation"}, {id:"5", n:"Session"}, 
-        {id:"4", n:"Transport"}, {id:"3", n:"Réseau"}, {id:"2", n:"Liaison de données"}, {id:"1", n:"Physique"},
-        {id:"trap1", n:"Internet"}, {id:"trap2", n:"Accès Réseau"} // Traps
+        {id:"8", n:"Application"}, {id:"7", n:"Présentation"}, {id:"6", n:"Session"}, 
+        {id:"5", n:"Transport"}, {id:"4", n:"Réseau"}, {id:"3", n:"Liaison de données"}, {id:"2", n:"Physique"},
+        {id:"99", n:"Internet"}, {id:"98", n:"Accès Réseau"} // Pièges
     ];
     
     let activeSeq = 1;
     let tcpSeq = { 1: [], 2: [], 3: [] };
     
     const m3Data = [
-        {q:"Serveur en attente de connexion entrante.", a:"LISTEN"}, 
-        {q:"Le client vient d'envoyer SYN et attend la réponse.", a:"SYN_SENT"}, 
-        {q:"Le serveur a reçu SYN et a répondu SYN-ACK.", a:"SYN_RCVD"},
-        {q:"Données en cours de transfert (session active).", a:"ESTABLISHED"}, 
-        {q:"Le client a envoyé FIN pour fermer et attend un ACK.", a:"FIN_WAIT_1"},
-        {q:"Demande de fermeture reçue par le serveur (avertit l'application).", a:"CLOSE_WAIT"},
-        {q:"Attente finale (2 MSL) avant libération totale du port.", a:"TIME_WAIT"}
+        {q:"Serveur en attente de connexion entrante.", a:"MJTUFO"}, 
+        {q:"Le client vient d'envoyer SYN et attend la réponse.", a:"TZO`TFOU"}, 
+        {q:"Le serveur a reçu SYN et a répondu SYN-ACK.", a:"TZO`SDWE"},
+        {q:"Données en cours de transfert (session active).", a:"FTUBCMJTIFE"}, 
+        {q:"Le client a envoyé FIN pour fermer et attend un ACK.", a:"GJO`XBJU`2"},
+        {q:"Demande de fermeture reçue par le serveur (avertit l'application).", a:"DMPTF`XBJU"},
+        {q:"Attente finale (2 MSL) avant libération totale du port.", a:"UJNF`XBJU"}
     ];
     const m3Options = ["LISTEN","LISTENING","SYN_SENT","SYN_RCVD","ESTABLISHED","FIN_WAIT_1","CLOSE_WAIT","CLOSED_WAIT","TIME_WAIT","CLOSED","OPEN"];
     
     const m4Data = [
-        {q:"> Câble RJ45 débranché ou carte réseau désactivée.", a:"1"},
-        {q:"> Ping vers 8.8.8.8 en échec (Délai d'attente dépassé) / Erreur IP.", a:"3"},
-        {q:"> Résolution DNS impossible pour www.site.com.", a:"7"}
+        {q:"> Câble RJ45 débranché ou carte réseau désactivée.", a:"2"},
+        {q:"> Ping vers 8.8.8.8 en échec (Délai d'attente dépassé) / Erreur IP.", a:"4"},
+        {q:"> Résolution DNS impossible pour www.site.com.", a:"8"}
     ];
     const m4Options = ["1 (Physique)", "2 (Liaison)", "3 (Réseau)", "4 (Transport)", "5 (Session)", "6 (Présentation)", "7 (Application)"];
     
     const m5Data = [
-        {q:"Protocole fiable, orienté connexion (ex: HTTP).", a:"TCP"}, 
-        {q:"Protocole rapide, aucune garantie de livraison (ex: Streaming).", a:"UDP"}, 
-        {q:"Opère au niveau 3 : gère l'adressage logique et le routage.", a:"IP"}, 
-        {q:"Résout l'adresse physique (MAC) à partir d'une adresse IP.", a:"ARP"}, 
-        {q:"Envoie des messages de diagnostic et d'erreur (ex: Ping).", a:"ICMP"}
+        {q:"Protocole fiable, orienté connexion (ex: HTTP).", a:"UDQ"}, 
+        {q:"Protocole rapide, aucune garantie de livraison (ex: Streaming).", a:"VEQ"}, 
+        {q:"Opère au niveau 3 : gère l'adressage logique et le routage.", a:"JQ"}, 
+        {q:"Résout l'adresse physique (MAC) à partir d'une adresse IP.", a:"BSQ"}, 
+        {q:"Envoie des messages de diagnostic et d'erreur (ex: Ping).", a:"JDNQ"}
     ];
     const m5Options = ["TCP","UDP","IP","ARP","ICMP","HTTP"];
     
     const m6Data = [
-        {q:"Application", a:"Application"}, {q:"Présentation", a:"Application"}, {q:"Session", a:"Application"}, 
-        {q:"Transport", a:"Transport"}, {q:"Réseau", a:"Internet"}, 
-        {q:"Liaison de données", a:"Accès Réseau"}, {q:"Physique", a:"Accès Réseau"}
+        {q:"Application", a:"Bqqmjdbujpo"}, {q:"Présentation", a:"Bqqmjdbujpo"}, {q:"Session", a:"Bqqmjdbujpo"}, 
+        {q:"Transport", a:"Usbotqpsu"}, {q:"Réseau", a:"Joufsofu"}, 
+        {q:"Liaison de données", a:"Bddft!Sftfbv"}, {q:"Physique", a:"Bddft!Sftfbv"}
     ];
-    const m6Options = ["Application","Transport","Internet","Accès Réseau","Réseau","Session"];
+    const m6Options = ["Application","Transport","Internet","Acces Reseau","Réseau","Session"];
     
     const m7Data = [
-        {q:"Transfert d'un fichier confidentiel lourd (FTP)", a:"TCP"}, 
-        {q:"Requête de résolution de nom (DNS)", a:"UDP"}, 
-        {q:"Chargement d'une page Web sécurisée (HTTPS)", a:"TCP"}, 
-        {q:"Test de connectivité avec la commande 'ping'", a:"ICMP"},
-        {q:"Appel vocal en temps réel (VoIP)", a:"UDP"}
+        {q:"Transfert d'un fichier confidentiel lourd (FTP)", a:"UDQ"}, 
+        {q:"Requête de résolution de nom (DNS)", a:"VEQ"}, 
+        {q:"Chargement d'une page Web sécurisée (HTTPS)", a:"UDQ"}, 
+        {q:"Test de connectivité avec la commande 'ping'", a:"JDNQ"},
+        {q:"Appel vocal en temps réel (VoIP)", a:"VEQ"}
     ];
     const m7Options = ["TCP","UDP","ICMP"];
 
     function initForms() {
-        // M1
         let tgt = document.getElementById('osi-target');
         let bnk = document.getElementById('osi-bank');
         [1,2,3,4,5,6,7].sort(()=>Math.random()-0.5).forEach(num => {
@@ -284,7 +287,6 @@
             });
         });
 
-        // M2 Selection Box Highlighter
         document.querySelectorAll('.tcp-sequence-box').forEach(box => {
             box.addEventListener('click', function() {
                 document.querySelectorAll('.tcp-sequence-box').forEach(b => b.style.borderColor = '#334');
@@ -295,7 +297,6 @@
             });
         });
 
-        // QCMs
         const genSelect = (data, containerId, prefix, options) => {
             let html = '';
             data.sort(()=>Math.random()-0.5).forEach((item, i) => {
@@ -338,53 +339,68 @@
             studentName = document.getElementById('student-name').value.trim();
             if(!studentName) { document.getElementById('login-error').style.display = 'block'; return; }
         }
+        
         document.getElementById(`page-${currentPage}`).classList.remove('active');
         currentPage++;
+        
         if(currentPage < totalPages) {
             document.getElementById(`page-${currentPage}`).classList.add('active');
-            document.getElementById('progress-indicator').innerText = `MODULE ${currentPage} / 8`;
+            if(currentPage <= 8) {
+                document.getElementById('progress-indicator').innerText = `MODULE ${currentPage} / 8`;
+            }
         }
-        if(currentPage === 8) {
+        
+        if(currentPage === 9) {
+            document.getElementById('progress-indicator').innerText = `RÉCUPÉRATION DES DONNÉES`;
             calculateScores();
             sendData();
-            document.getElementById('page-9').classList.add('active');
-            document.getElementById('progress-indicator').innerText = `RÉCUPÉRATION DES DONNÉES`;
         }
     }
 
     function calculateScores() {
-        // M1
+        // Validation obfusquée M1 : l'ID de la couche + 1 doit être égal au Data-ID du draggable
         let m1C = 0;
         document.querySelectorAll('.drop-zone').forEach(z => { 
             let item = z.querySelector('.draggable-item');
-            if(item && item.dataset.id === z.dataset.layer) m1C++; 
+            if(item && (parseInt(z.dataset.layer) + 1 === parseInt(item.dataset.id))) m1C++; 
         });
         scores[0] = (m1C / 7) * 5;
 
-        // M2
+        // Validation obfusquée M2
         let m2C = 0;
-        if (JSON.stringify(tcpSeq[1]) === JSON.stringify(['SYN','SYN-ACK','ACK'])) m2C += 2;
-        if (JSON.stringify(tcpSeq[2]) === JSON.stringify(['FIN','ACK','FIN','ACK'])) m2C += 2;
-        if (JSON.stringify(tcpSeq[3]) === JSON.stringify(['SYN','RST-ACK']) || JSON.stringify(tcpSeq[3]) === JSON.stringify(['SYN','RST'])) m2C += 1;
+        if (enc(tcpSeq[1].join(',')) === 'TZO-TZO.BDL-BDL') m2C += 2;
+        if (enc(tcpSeq[2].join(',')) === 'GJO-BDL-GJO-BDL') m2C += 2;
+        if (enc(tcpSeq[3].join(',')) === 'TZO-STU.BDL' || enc(tcpSeq[3].join(',')) === 'TZO-STU') m2C += 1;
         scores[1] = m2C;
 
-        // M3, M4, M5, M6, M7
+        // Validation obfusquée QCM (M3, M4, M5, M6, M7)
         const calcQCM = (prefix, dataLength) => {
             let c = 0;
-            document.querySelectorAll(`#${prefix}-container select`).forEach(s => { if(s.value === s.dataset.ans) c++; });
+            document.querySelectorAll(`#${prefix}-container select`).forEach(s => { 
+                // On chiffre la réponse de l'utilisateur à la volée pour comparer
+                if(enc(s.value) === s.dataset.ans) c++; 
+            });
             return (c / dataLength) * 5;
         };
         scores[2] = calcQCM('m3', m3Data.length);
         scores[3] = calcQCM('m4', m4Data.length);
-        scores[4] = calcQCM('m5', m5Data.length);
+        
+        // M5 (Gestion du cas TCP/UDP valide pour les numéros de port si ajouté un jour)
+        let m5C = 0;
+        document.querySelectorAll(`#m5-container select`).forEach(s => { 
+            let encryptedValue = enc(s.value);
+            if(encryptedValue === s.dataset.ans) m5C++; 
+        });
+        scores[4] = (m5C / m5Data.length) * 5;
+        
         scores[5] = calcQCM('m6', m6Data.length);
         scores[6] = calcQCM('m7', m7Data.length);
 
-        // M8
+        // Validation obfusquée M8
         let m8C = 0;
-        if(document.getElementById('m8-q1').value === "Broadcast") m8C += 1.66;
-        if(document.getElementById('m8-q2').value === "FF:FF:FF:FF:FF:FF") m8C += 1.66;
-        if(document.getElementById('m8-q3').value === "Unicast") m8C += 1.68; // Make it exactly 5
+        if(enc(document.getElementById('m8-q1').value) === "Cspbedbtu") m8C += 1.66;
+        if(enc(document.getElementById('m8-q2').value) === "GG;GG;GG;GG;GG;GG") m8C += 1.66;
+        if(enc(document.getElementById('m8-q3').value) === "Vojdbtu") m8C += 1.68;
         scores[7] = m8C;
 
         let total = scores.reduce((a,b) => a+b, 0);
